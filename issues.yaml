@@ -7,3 +7,13 @@
   urls:
   - https://github.com/foo/foo/issues/51
   date: 2016-06-09
+
+- package: bar
+  versions:
+  - 1.0.1
+  - 1.0.1
+  - 0.9.0
+  reason: Local execution hole
+  urls:
+  - https://github.com/bar/bar/issues/1
+  date: 2016-09-09
