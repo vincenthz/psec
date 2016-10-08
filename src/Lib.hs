@@ -14,6 +14,9 @@ import           Data.Yaml
 import           Data.Text (Text)
 import qualified Data.Text as T
 import           Data.Time.Calendar
+import           Data.Version
+import           Text.ParserCombinators.ReadP
+
 
 {-
 - package: foo
@@ -39,9 +42,6 @@ data VersionSpecifier =
     | VersionRange (Maybe Version) (Maybe Version)
     deriving (Show,Eq)
 
-data Version = Version -- use version in base.
-    deriving (Show,Eq)
-
 data Issue = Issue
     { issuePackage      :: PackageName
     , issueVersions     :: [VersionSpecifier]
@@ -52,9 +52,11 @@ data Issue = Issue
     deriving (Show,Eq)
 
 instance FromJSON VersionSpecifier where
-    parseJSON (String t) = parseVersion t
-
-parseVersion = undefined
+    parseJSON (String t) =
+        case readP_to_S parseVersion $ T.unpack t of
+            []          -> fail ("version parsing failed empty: " ++ show t)
+            [(ver, "")] -> return $ VersionOne ver
+            l           -> return $ VersionOne $ fst $ last l
 
 data Db = Db [Issue]
     deriving (Show,Eq)
@@ -64,16 +66,16 @@ instance FromJSON Issue where
         <$> v .: "package"
         <*> v .: "versions"
         <*> v .: "reason"
-        <*> v .:? "url"
+        <*> v .:? "urls"
         <*> v .: "date"
 
 instance FromJSON Db where
-    parseJSON (Array v) = undefined
+    parseJSON v = Db <$> parseJSON v -- (Array v) = return $ Db <$> v
 
---readDb :: ->
+-- | Try to read the whole list of issues defined
 readDb :: IO (Either ParseException Db)
-readDb = decodeFileEither "issue.yaml"
+readDb = decodeFileEither "issues.yaml"
 
+-- | Get all issues matching the package version
 
-queryDb :: Db -> [(PackageName, Version)] -> [Issue]
-queryDb = undefined
+queryDb db pkgs = undefined
