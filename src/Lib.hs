@@ -70,7 +70,7 @@ instance FromJSON Issue where
         <*> v .: "date"
 
 instance FromJSON Db where
-    parseJSON v = Db <$> parseJSON v -- (Array v) = return $ Db <$> v
+    parseJSON v = Db <$> parseJSON v
 
 -- | Try to read the whole list of issues defined
 readDb :: IO (Either ParseException Db)
