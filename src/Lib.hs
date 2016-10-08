@@ -46,7 +46,7 @@ data Issue = Issue
     { issuePackage      :: PackageName
     , issueVersions     :: [VersionSpecifier]
     , issueReason       :: String
-    , issueUrl          :: Maybe String
+    , issueUrl          :: Maybe [String]
     , issueReportedDate :: Day
     }
     deriving (Show,Eq)
