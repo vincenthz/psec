@@ -17,20 +17,6 @@ import           Data.Time.Calendar
 import           Data.Version
 import           Text.ParserCombinators.ReadP
 
-
-{-
-- package: foo
-  versions:
-  - 1.0.0
-  - 1.0.1
-  - == 0.9.*
-  reason: Remote execution hole
-  urls:
-  - https://github.com/foo/foo/issues/51
-  date: 2016-06-09
-  # Maybe other metadata fields, like severity and type (security/runtime/compile time)
--}
-
 -- useful ?
 -- data Severity = Critical | Major | Minor
 
