@@ -1,3 +1,4 @@
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -8,6 +9,7 @@ module Lib
     -- * API
     , readDb
     , queryDb
+    , readPackageIdentifier
     ) where
 
 import           Data.Yaml
@@ -16,7 +18,7 @@ import qualified Data.Text as T
 import           Data.Time.Calendar
 import           Data.Version
 import           Text.ParserCombinators.ReadP
-import           Distribution.Version(VersionRange(..))
+import           Distribution.Version(VersionRange(..), withinRange)
 import           Distribution.Package (PackageName(..),PackageIdentifier(..))
 import qualified Distribution.Text         as C (parse)
 import qualified Distribution.Compat.ReadP as C (readP_to_S)
@@ -45,6 +47,11 @@ instance FromJSON VersionRange where
                                  l           -> return $ fst $ last l
             l           -> return $ fst $ last l
 
+readPackageIdentifier :: String -> Maybe PackageIdentifier
+readPackageIdentifier (v :: String) =
+   case C.readP_to_S C.parse $ v of
+     []          -> fail ("version range parsing failed empty: " ++ show v)
+     l           -> return $ fst $ last l
 
 
 data Db = Db [Issue]
@@ -68,7 +75,7 @@ readDb = decodeFileEither "issues.yaml"
 -- | Get all issues matching the package version
 queryDb :: Db -> PackageIdentifier -> [Issue]
 queryDb (Db db) (PackageIdentifier pkgName pkgVersion) =
-   filter (undefined) undefined
+   filter (\Issue {..} -> issuePackage == pkgName && any (withinRange pkgVersion) issueVersions) db
 
 
 
