@@ -10,9 +10,12 @@ module Lib
     , readDb
     , queryDb
     , readPackageIdentifier
+    , getProjectDependencies
+    , getAllIssues
     ) where
 
 import           Data.Yaml
+import           Data.Maybe (catMaybes)
 import           Data.Text (Text)
 import qualified Data.Text as T
 import           Data.Time.Calendar
@@ -22,6 +25,7 @@ import           Distribution.Version(VersionRange(..), withinRange)
 import           Distribution.Package (PackageName(..),PackageIdentifier(..))
 import qualified Distribution.Text         as C (parse)
 import qualified Distribution.Compat.ReadP as C (readP_to_S)
+import           System.Process
 
 -- useful ?
 -- data Severity = Critical | Major | Minor
@@ -48,11 +52,10 @@ instance FromJSON VersionRange where
             l           -> return $ fst $ last l
 
 readPackageIdentifier :: String -> Maybe PackageIdentifier
-readPackageIdentifier (v :: String) =
+readPackageIdentifier v =
    case C.readP_to_S C.parse $ v of
      []          -> fail ("version range parsing failed empty: " ++ show v)
      l           -> return $ fst $ last l
-
 
 data Db = Db [Issue]
     deriving (Show,Eq)
@@ -77,6 +80,11 @@ queryDb :: Db -> PackageIdentifier -> [Issue]
 queryDb (Db db) (PackageIdentifier pkgName pkgVersion) =
    filter (\Issue {..} -> issuePackage == pkgName && any (withinRange pkgVersion) issueVersions) db
 
+-- | Use Stack to get a list of all dependencies for a local project
+getProjectDependencies :: IO [PackageIdentifier]
+getProjectDependencies =
+  catMaybes . map readPackageIdentifier . lines . (\(_,r,_)->r) <$>
+    readProcessWithExitCode "stack" ["list-dependencies", "--separator=-"] ""
 
-
-
+getAllIssues :: Db -> [PackageIdentifier] -> [Issue]
+getAllIssues db = concatMap (queryDb db)

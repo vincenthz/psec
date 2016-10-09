@@ -4,5 +4,10 @@ import Lib
 
 main :: IO ()
 main = do
-    db <- readDb
-    putStrLn $ show db
+    Right db <- readDb
+
+    pdep <- getProjectDependencies
+--     print pdep
+    print $ getAllIssues db pdep
+--     putStrLn $ show db
+
