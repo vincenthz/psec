@@ -16,6 +16,9 @@ import qualified Data.Text as T
 import           Data.Time.Calendar
 import           Data.Version
 import           Text.ParserCombinators.ReadP
+import           Distribution.Version
+import qualified Distribution.Text         as C (parse)
+import qualified Distribution.Compat.ReadP as C (readP_to_S)
 
 -- useful ?
 -- data Severity = Critical | Major | Minor
@@ -30,12 +33,20 @@ data VersionSpecifier =
 
 data Issue = Issue
     { issuePackage      :: PackageName
-    , issueVersions     :: [VersionSpecifier]
+    , issueVersions     :: [VersionRange]
     , issueReason       :: String
     , issueUrl          :: Maybe [String]
     , issueReportedDate :: Day
     }
     deriving (Show,Eq)
+instance FromJSON VersionRange where
+    parseJSON (String t) =
+        case C.readP_to_S C.parse $ T.unpack t of
+            []          -> case C.readP_to_S C.parse $ ("== " ++) $ T.unpack t of
+                                 []          -> fail ("version range parsing failed empty: " ++ show t)
+                                 l           -> return $ fst $ last l
+            l           -> return $ fst $ last l
+
 
 instance FromJSON VersionSpecifier where
     parseJSON (String t) =
