@@ -3,12 +3,14 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
+
 module Lib
     ( Issue(..)
     , PackageName(..)
     , Version(..)
     -- * API
     , readDb
+    , readDbBS
     , queryDb
     , readPackageIdentifier
     , getProjectDependencies
