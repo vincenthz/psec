@@ -18,6 +18,7 @@ import           Data.Text (Text)
 import qualified Data.Text as T
 import           Data.Time.Calendar
 import           Data.Version
+import qualified Data.ByteString.Char8 as S8
 import           Text.ParserCombinators.ReadP
 import           Distribution.Version(VersionRange(..), withinRange)
 import           Distribution.Package (PackageName(..),PackageIdentifier(..))
@@ -69,6 +70,19 @@ instance FromJSON Issue where
 instance FromJSON Db where
     parseJSON v = Db <$> parseJSON v
 
+
+-- $setup
+-- >>> import qualified Data.ByteString.Char8 as S8
+
+-- | Read Db from Yaml
+--
+-- Example:
+--
+-- >>> readDbBS $ S8.pack "- package: foo\n  versions:\n  - 1.0.0\n  - 1.0.1\n  - 0.9.0\n  reason: Remote execution hole\n  urls:\n  - https://github.com/foo/foo/issues/51\n  date: 2016-06-09\n\n- package: bar\n  versions:\n  - 1.0.1\n  - 1.0.1\n  - 0.9.0\n  reason: Local execution hole\n  urls:\n  - https://github.com/bar/bar/issues/1\n  date: 2016-09-09\n"
+-- Right (Db [Issue {issuePackage = PackageName {unPackageName = "foo"}, issueVersions = [ThisVersion (Version {versionBranch = [1,0,0], versionTags = []}),ThisVersion (Version {versionBranch = [1,0,1], versionTags = []}),ThisVersion (Version {versionBranch = [0,9,0], versionTags = []})], issueReason = "Remote execution hole", issueUrl = Just ["https://github.com/foo/foo/issues/51"], issueReportedDate = 2016-06-09},Issue {issuePackage = PackageName {unPackageName = "bar"}, issueVersions = [ThisVersion (Version {versionBranch = [1,0,1], versionTags = []}),ThisVersion (Version {versionBranch = [1,0,1], versionTags = []}),ThisVersion (Version {versionBranch = [0,9,0], versionTags = []})], issueReason = "Local execution hole", issueUrl = Just ["https://github.com/bar/bar/issues/1"], issueReportedDate = 2016-09-09}])
+readDbBS :: S8.ByteString -> Either ParseException Db
+readDbBS = decodeEither'
+
 -- | Try to read the whole list of issues defined
 readDb :: IO (Either ParseException Db)
 readDb = decodeFileEither "issues.yaml"
@@ -77,7 +91,5 @@ readDb = decodeFileEither "issues.yaml"
 queryDb :: Db -> PackageIdentifier -> [Issue]
 queryDb (Db db) (PackageIdentifier pkgName pkgVersion) =
    filter (\Issue {..} -> issuePackage == pkgName && any (withinRange pkgVersion) issueVersions) db
-
-
 
 

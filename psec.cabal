@@ -20,6 +20,7 @@ library
                      , text
                      , time
                      , yaml
+                     , bytestring
                      , Cabal
   default-language:    Haskell2010
 
@@ -39,6 +40,19 @@ test-suite psec-test
                      , psec
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   default-language:    Haskell2010
+
+test-suite psec-doctest
+  type:              exitcode-stdio-1.0
+  default-language:  Haskell2010
+  ghc-options:       -Wall -Werror -O2 -threaded -rtsopts -with-rtsopts=-N
+  hs-source-dirs:    src-doctest
+  main-is:           doctest.hs
+  build-depends:     base >= 4.8 && < 5
+                   , doctest >=0.10
+                   , doctest-discover
+                   , Glob >= 0.7
+                   , QuickCheck >= 2.5
+                   , psec
 
 source-repository head
   type:     git
