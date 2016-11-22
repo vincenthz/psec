@@ -8,6 +8,14 @@
   - https://github.com/foo/foo/issues/51
   date: 2016-06-09
 
+- package: Cabal
+  versions:
+  - <2
+  reason: Remote execution hole
+  urls:
+  - https://github.com/foo/foo/issues/51
+  date: 2016-06-19
+
 - package: bar
   versions:
   - 1.0.1
